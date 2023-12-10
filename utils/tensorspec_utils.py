@@ -28,16 +28,12 @@ from tensor2robot.proto import t2r_pb2
 import tensorflow.compat.v1 as tf
 
 from google.protobuf import text_format
-from tensorflow.contrib import framework as contrib_framework
-
-nest = contrib_framework.nest
-TSPEC = contrib_framework.TensorSpec
-
+from tensorflow import TensorSpec, nest
 EXTRA_ASSETS_DIRECTORY = 'assets.extra'
 T2R_ASSETS_FILENAME = 't2r_assets.pbtxt'
 
 
-class ExtendedTensorSpec(TSPEC, object):
+class ExtendedTensorSpec(TensorSpec, object):
   """Extension to TensorSpec to suport optional tensors and data formats.
 
   An ExtendedTensorSpec allows an API to describe the Tensors that it accepts or
@@ -118,7 +114,7 @@ class ExtendedTensorSpec(TSPEC, object):
                 dataset_key = None,
                 batch_size = None,
                 varlen_default_value = None):
-    if not (isinstance(spec, TSPEC) or isinstance(spec, ExtendedTensorSpec)):
+    if not (isinstance(spec, TensorSpec) or isinstance(spec, ExtendedTensorSpec)):
       raise ValueError('from_spec requires TensorSpec or ExtendedTensorSpec.')
 
     if is_optional is None:
@@ -218,7 +214,7 @@ class ExtendedTensorSpec(TSPEC, object):
   def to_spec(cls, instance):
     if isinstance(instance, tf.Tensor):
       return ExtendedTensorSpec.from_tensor(instance)
-    elif isinstance(instance, TSPEC):
+    elif isinstance(instance, TensorSpec):
       return ExtendedTensorSpec.from_spec(instance)
     elif isinstance(instance, np.ndarray):
       return ExtendedTensorSpec(
@@ -1444,7 +1440,7 @@ def is_flat_spec_or_tensors_structure(spec_or_tensors):
                                                      collections.OrderedDict):
     # We have to check any element of our dict or OrderedDict.
     for value in spec_or_tensors.values():
-      if isinstance(value, contrib_framework.TensorSpec):
+      if isinstance(value, TensorSpec):
         continue
       if isinstance(value, tf.Tensor):
         continue
@@ -1495,7 +1491,7 @@ def assert_valid_spec_structure(
 
   if isinstance(spec_structure, list) or isinstance(spec_structure, tuple):
     for value in spec_structure:
-      if isinstance(value, contrib_framework.TensorSpec):
+      if isinstance(value, TensorSpec):
         # We only add non None TensorSpec names. These names have to be unique
         # within all specified TensorSpec names used so far in this
         # spec_structure.
